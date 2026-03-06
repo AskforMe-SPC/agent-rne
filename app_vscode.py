@@ -1550,6 +1550,7 @@ def generate_report_pdf(
     n_actes  = company_summary.get("nb_actes", 0)
     has_bilan_docs = any(str(d.get("famille") or "").upper().startswith("COMP") for d in docs)
     has_actes_docs = any(str(d.get("famille") or "").upper() == "ACTE" for d in docs)
+    split_b2_sections = has_bilan_docs or int(n_bilans or 0) > 0
 
     # ── Couverture ──
     story.append(Spacer(1, 2 * cm))
@@ -1564,7 +1565,7 @@ def generate_report_pdf(
     story.append(Spacer(1, 1.8 * cm))
     for ml in [f"Date du rapport : {run_date}",
                f"Documents collect\u00e9s : {n_docs}",
-               f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (Documents téléchargés: {n_docs})",
+               f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (dans {n_docs} documents téléchargés)",
                "Source : Registre National des Entreprises (INPI)"]:
         story.append(RLPara(ml, sty["RCvM"])); story.append(Spacer(1, 1.5 * mm))
 
@@ -1581,7 +1582,7 @@ def generate_report_pdf(
         (2, "B.2", "Analyse synth\u00e9tique des documents"),
         (1, "C", "Informations de collecte"),
     ])
-    if has_bilan_docs:
+    if split_b2_sections:
         toc_lines.insert(-1, (3, "B.2.a", "Comptes Annuels"))
         if has_actes_docs:
             toc_lines.insert(-1, (3, "B.2.b", "Actes"))
@@ -1598,7 +1599,7 @@ def generate_report_pdf(
     attestation_url = f"https://data.inpi.fr/export/companies?format=pdf&ids=[%22{siren}%22]"
     story.append(
         RLPara(
-            f"""👉 <link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="11">Télécharger l'attestation d'immatriculation au Registre National des Entreprises</font></u></link>""",
+            f"""<font color="#000000">👉 </font><link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="11">Télécharger l'attestation d'immatriculation au Registre National des Entreprises</font></u></link>""",
             sty["RBd"],
         )
     )
@@ -1628,17 +1629,15 @@ def generate_report_pdf(
         [RLPara("Documents juridiques", sty["RTd"]), RLPara(str(company_summary.get("nb_documents_juridiques", n_docs_juridiques)), sty["RTd"])],
         [RLPara("Actes détectés", sty["RTd"]), RLPara(str(company_summary.get("nb_actes", n_actes)), sty["RTd"])],
     ]
-    sum_tbl = Table(sum_rows, colWidths=[cw - 2.0 * cm, 2.0 * cm], hAlign="LEFT")
+    sum_tbl = Table(sum_rows, colWidths=[cw - 2.0 * cm, 2.0 * cm])
     sum_style: List[Any] = [
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
         ("BACKGROUND", (0, 0), (-1, 0), _C_NAVY),
         ("TEXTCOLOR", (0, 0), (-1, 0), white),
-        ("BOX", (0, 0), (-1, -1), 0.3, _C_BORDER),
-        ("INNERGRID", (0, 0), (-1, -1), 0.3, _C_BORDER),
+        ("LINEBELOW", (0, 1), (-1, -1), 0.3, _C_BORDER),
     ]
     for i in range(1, len(sum_rows)):
         sum_style.append(("BACKGROUND", (0, i), (-1, i), _C_LGRAY if i % 2 == 0 else _C_CARD))
@@ -1666,7 +1665,7 @@ def generate_report_pdf(
                            RLPara(_rx(r["famille"]), sty["RTd"]), RLPara(_rx(nat), sty["RTd"]),
                            RLPara(_rx(composition), sty["RTd"]),
                            RLPara(bdg, a_s)])
-        bw = [1.6*cm, 2.7*cm, 3.1*cm, 6.2*cm, cw-1.6*cm-2.7*cm-3.1*cm-6.2*cm-2*cm, 2*cm]
+        bw = [1.6*cm, 2.7*cm, 3.1*cm, 7.2*cm, cw-1.6*cm-2.7*cm-3.1*cm-7.2*cm-2*cm, 2*cm]
         bt = Table(b_rows, colWidths=bw)
         bts: List[Any] = [("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),5),
                 ("BOTTOMPADDING",(0,0),(-1,-1),5),("LEFTPADDING",(0,0),(-1,-1),6),
@@ -1742,12 +1741,15 @@ def generate_report_pdf(
     non_bilan_docs = [r for r in docs if r not in bilan_docs]
     docs_for_b2 = docs if not has_bilan_docs else (bilan_docs + non_bilan_docs)
 
-    if has_bilan_docs:
+    if split_b2_sections:
         story.append(Spacer(1, 3*mm))
         story.append(RLPara("B.2.a&nbsp;&nbsp;Comptes Annuels", sty["RH2"]))
+        if not bilan_docs:
+            story.append(RLPara("Aucun compte annuel disponible dans les documents analysés.", sty["RBd"]))
 
     for ix, r in enumerate(docs_for_b2, 1):
         if has_bilan_docs and has_actes_docs and ix == len(bilan_docs) + 1:
+        if split_b2_sections and ix == len(bilan_docs) + 1:
             story.append(PageBreak())
             story.append(RLPara("B.2.b&nbsp;&nbsp;Actes", sty["RH2"]))
         story.append(Spacer(1, 4*mm))
@@ -1767,10 +1769,7 @@ def generate_report_pdf(
         fam = _display_family_label(r.get("famille"))
         status_raw = str(r.get("document_analyse") or "").upper()
         status_label = "OUI" if status_raw == "OUI" else "NON"
-        cleaned_desc = _clean_descriptif(r.get("descriptif"))
-        display_description = "Analyse non disponible pour ce document." if status_label == "NON" else (
-            cleaned_desc if cleaned_desc else "Aucune description exploitable extraite."
-        )
+        display_description = "Pas de description disponible dans cette version."
         meta_rows: List[Any] = [
             ("Nom du fichier", f"{r.get('filename_base', 'Document')}.pdf"),
             ("Famille", fam),
@@ -1997,6 +1996,7 @@ def generate_report_word(
     n_actes = sum(1 for d in norm_docs if (d.get("famille") or "").upper() == "ACTE")
     has_bilan_docs = any(str(d.get("famille") or "").upper().startswith("COMP") for d in norm_docs)
     has_actes_docs = any(str(d.get("famille") or "").upper() == "ACTE" for d in norm_docs)
+    split_b2_sections = has_bilan_docs or int(n_bilans or 0) > 0
 
     # ── Couverture ────────────────────────────────────────────────────────────
     if LOGO_PATH.exists():
@@ -2029,7 +2029,7 @@ def generate_report_word(
     for ml in [
         f"Date du rapport : {run_date}",
         f"Documents collect\u00e9s : {n_docs}",
-        f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (Documents téléchargés: {n_docs})",
+        f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (dans {n_docs} documents téléchargés)",
         "Source : Registre National des Entreprises (INPI)",
     ]:
         pm = wdoc.add_paragraph()
@@ -2055,7 +2055,7 @@ def generate_report_word(
         (2, "B.2", "Analyse synthétique des documents"),
         (1, "C", "Informations de collecte"),
     ])
-    if has_bilan_docs:
+    if split_b2_sections:
         toc_lines.insert(-1, (3, "B.2.a", "Comptes Annuels"))
         if has_actes_docs:
             toc_lines.insert(-1, (3, "B.2.b", "Actes"))
@@ -2166,11 +2166,15 @@ def generate_report_word(
     non_bilan_docs = [r for r in norm_docs if r not in bilan_docs]
     docs_for_b2 = norm_docs if not has_bilan_docs else (bilan_docs + non_bilan_docs)
 
-    if has_bilan_docs:
+    if split_b2_sections:
         _w_add_heading2(wdoc, "B.2.a", "Comptes Annuels")
+        if not bilan_docs:
+            p = wdoc.add_paragraph("Aucun compte annuel disponible dans les documents analysés.")
+            p.runs[0].font.size = Pt(9.5)
 
     for ix, r in enumerate(docs_for_b2, 1):
         if has_bilan_docs and has_actes_docs and ix == len(bilan_docs) + 1:
+        if split_b2_sections and ix == len(bilan_docs) + 1:
             wdoc.add_page_break()
             _w_add_heading2(wdoc, "B.2.b", "Actes")
         wdoc.add_paragraph()
@@ -2188,10 +2192,7 @@ def generate_report_word(
 
         display_type = _w_display_type_label(r)
         status_label = "OUI" if str(r.get("document_analyse") or "").upper() == "OUI" else "NON"
-        cleaned_desc = _w_clean_descriptif(r.get("descriptif"))
-        display_description = "Analyse non disponible pour ce document." if status_label == "NON" else (
-            cleaned_desc if cleaned_desc else "Aucune description exploitable extraite."
-        )
+        display_description = "Pas de description disponible dans cette version."
         detail_rows = [
             ("Date de d\u00e9p\u00f4t", r.get("date_depot", "")),
             ("Famille",                 _w_display_family_label(r.get("famille"))),
