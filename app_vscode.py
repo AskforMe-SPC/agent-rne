@@ -1548,6 +1548,7 @@ def generate_report_pdf(
     n_bilans = company_summary.get("nb_comptes_annuels", company_summary.get("nb_bilans", 0))
     n_docs_juridiques = company_summary.get("nb_documents_juridiques", 0)
     n_actes  = company_summary.get("nb_actes", 0)
+    has_bilan_docs = any(str(d.get("famille") or "").upper().startswith("COMP") for d in docs)
 
     # ── Couverture ──
     story.append(Spacer(1, 2 * cm))
@@ -1562,7 +1563,7 @@ def generate_report_pdf(
     story.append(Spacer(1, 1.8 * cm))
     for ml in [f"Date du rapport : {run_date}",
                f"Documents collect\u00e9s : {n_docs}",
-               f"FICHIERS ANALYSES - Bilans : {n_bilans} | Documents juridique : {n_docs_juridiques} | Actes : {n_actes}",
+               f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (Documents téléchargés: {n_docs})",
                "Source : Registre National des Entreprises (INPI)"]:
         story.append(RLPara(ml, sty["RCvM"])); story.append(Spacer(1, 1.5 * mm))
 
@@ -1579,10 +1580,14 @@ def generate_report_pdf(
         (2, "B.2", "Analyse synth\u00e9tique des documents"),
         (1, "C", "Informations de collecte"),
     ])
+    if has_bilan_docs:
+        toc_lines.insert(-1, (3, "B.2.a", "Comptes Annuels"))
+        toc_lines.insert(-1, (3, "B.2.b", "Actes"))
     for level, num, title in toc_lines:
         s = sty["RToc1"] if level == 1 else sty["RToc2"]
         clr = ohx if level == 1 else mhx
-        story.append(RLPara(f"<font color='#{clr}'><b>{num}</b></font>&nbsp;&nbsp;&nbsp;{_rx(title)}", s))
+        indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" if level == 3 else ""
+        story.append(RLPara(f"{indent}<font color='#{clr}'><b>{num}</b></font>&nbsp;&nbsp;&nbsp;{_rx(title)}", s))
 
     # ── Section A ──
     story.append(PageBreak())
@@ -1705,9 +1710,12 @@ def generate_report_pdf(
         return str(raw_family or "").strip() or "Document"
 
     def _detected_acts_value(row: Dict[str, Any], display_type: str) -> str:
+        fam = str(row.get("famille") or "").upper()
+        if fam != "ACTE":
+            return str(int(row.get("nb_actes_in_doc") or 1))
         labels = [str(x).strip() for x in (row.get("actes_labels") or []) if str(x).strip()]
         if not labels:
-            labels = [display_type]
+            labels = [x.strip() for x in str(display_type).split("+") if x.strip()] or [display_type]
         return "\n".join(f"{idx} - {lbl}" for idx, lbl in enumerate(labels, 1))
 
     def _clean_descriptif(v: Any) -> str:
@@ -1719,6 +1727,8 @@ def generate_report_pdf(
         out: List[str] = []
         seen = set()
         for c in chunks:
+            if re.fullmatch(r"Document composite comprenant\s+\d+\s+actes?\.?", c, flags=re.IGNORECASE):
+                continue
             k = c.casefold()
             if k in seen:
                 continue
@@ -1726,7 +1736,18 @@ def generate_report_pdf(
             out.append(c)
         return "\n".join(out[:12])
 
-    for ix, r in enumerate(docs, 1):
+    bilan_docs = [r for r in docs if str(r.get("famille") or "").upper().startswith("COMP")]
+    non_bilan_docs = [r for r in docs if r not in bilan_docs]
+    docs_for_b2 = docs if not has_bilan_docs else (bilan_docs + non_bilan_docs)
+
+    if has_bilan_docs:
+        story.append(Spacer(1, 3*mm))
+        story.append(RLPara("B.2.a&nbsp;&nbsp;Comptes Annuels", sty["RH2"]))
+
+    for ix, r in enumerate(docs_for_b2, 1):
+        if has_bilan_docs and ix == len(bilan_docs) + 1:
+            story.append(PageBreak())
+            story.append(RLPara("B.2.b&nbsp;&nbsp;Actes", sty["RH2"]))
         story.append(Spacer(1, 4*mm))
         date_depot = str(r.get("date_depot") or "").strip() or "Date non disponible"
         display_type = _display_type_label(r)
@@ -1757,7 +1778,7 @@ def generate_report_pdf(
         ]
         story.append(_rne_kv_table(meta_rows, sty, col1=5.3*cm, total_w=cw))
 
-        if ix < n_docs:
+        if ix < len(docs_for_b2):
             story.append(Spacer(1, 3*mm))
             story.append(HRFlowable(width="100%", thickness=0.3, color=_C_BORDER, spaceBefore=0, spaceAfter=2*mm))
 
@@ -1972,6 +1993,7 @@ def generate_report_word(
     n_bilans = sum(1 for d in norm_docs if (d.get("famille") or "").upper().startswith("COMP"))
     n_docs_juridiques = company_summary.get("nb_documents_juridiques", 0)
     n_actes = sum(1 for d in norm_docs if (d.get("famille") or "").upper() == "ACTE")
+    has_bilan_docs = any(str(d.get("famille") or "").upper().startswith("COMP") for d in norm_docs)
 
     # ── Couverture ────────────────────────────────────────────────────────────
     if LOGO_PATH.exists():
@@ -2004,7 +2026,7 @@ def generate_report_word(
     for ml in [
         f"Date du rapport : {run_date}",
         f"Documents collect\u00e9s : {n_docs}",
-        f"FICHIERS ANALYSES - Bilans : {n_bilans} | Documents juridique : {n_docs_juridiques} | Actes : {n_actes}",
+        f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (Documents téléchargés: {n_docs})",
         "Source : Registre National des Entreprises (INPI)",
     ]:
         pm = wdoc.add_paragraph()
@@ -2027,14 +2049,19 @@ def generate_report_word(
     toc_lines.extend([
         (1, "B", "Documents d\u00e9pos\u00e9s"),
         (2, "B.1", "Liste des documents"),
-        (2, "B.2", "D\u00e9tail des documents"),
+        (2, "B.2", "Analyse synthétique des documents"),
         (1, "C", "Informations de collecte"),
     ])
+    if has_bilan_docs:
+        toc_lines.insert(-1, (3, "B.2.a", "Comptes Annuels"))
+        toc_lines.insert(-1, (3, "B.2.b", "Actes"))
     for level, num, ttl in toc_lines:
         pi = wdoc.add_paragraph()
         pi.paragraph_format.space_before = Pt(0); pi.paragraph_format.space_after = Pt(0)
         if level == 2:
             pi.paragraph_format.left_indent = DocxCm(0.8)
+        if level == 3:
+            pi.paragraph_format.left_indent = DocxCm(1.6)
         rn = pi.add_run(f"{num}   ")
         rn.font.bold = True; rn.font.size = Pt(11) if level == 1 else Pt(10)
         rn.font.color.rgb = _D_ORANGE if level == 1 else _D_MUTED
@@ -2082,7 +2109,7 @@ def generate_report_word(
                  nature, composition, (analysed, "green" if analysed == "OUI" else "red")],
                 ix - 1)
 
-    _w_add_heading2(wdoc, "B.2", "D\u00e9tail des documents")
+    _w_add_heading2(wdoc, "B.2", "Analyse synthétique des documents")
 
     def _w_display_type_label(row: Dict[str, Any]) -> str:
         tl = str(row.get("typeLibelle") or row.get("nature") or row.get("typeDocument") or "").strip()
@@ -2113,6 +2140,8 @@ def generate_report_word(
         out: List[str] = []
         seen = set()
         for c in chunks:
+            if re.fullmatch(r"Document composite comprenant\s+\d+\s+actes?\.?", c, flags=re.IGNORECASE):
+                continue
             k = c.casefold()
             if k in seen:
                 continue
@@ -2121,18 +2150,31 @@ def generate_report_word(
         return "\n".join(out[:12])
 
     def _w_detected_acts_value(row: Dict[str, Any], display_type: str) -> str:
+        fam = str(row.get("famille") or "").upper()
+        if fam != "ACTE":
+            return str(int(row.get("nb_actes_in_doc") or 1))
         labels = [str(x).strip() for x in (row.get("actes_labels") or []) if str(x).strip()]
         if not labels:
-            labels = [display_type]
+            labels = [x.strip() for x in str(display_type).split("+") if x.strip()] or [display_type]
         return "\n".join(f"{idx} - {lbl}" for idx, lbl in enumerate(labels, 1))
 
-    for ix, r in enumerate(norm_docs, 1):
+    bilan_docs = [r for r in norm_docs if str(r.get("famille") or "").upper().startswith("COMP")]
+    non_bilan_docs = [r for r in norm_docs if r not in bilan_docs]
+    docs_for_b2 = norm_docs if not has_bilan_docs else (bilan_docs + non_bilan_docs)
+
+    if has_bilan_docs:
+        _w_add_heading2(wdoc, "B.2.a", "Comptes Annuels")
+
+    for ix, r in enumerate(docs_for_b2, 1):
+        if has_bilan_docs and ix == len(bilan_docs) + 1:
+            wdoc.add_page_break()
+            _w_add_heading2(wdoc, "B.2.b", "Actes")
         wdoc.add_paragraph()
         bdg = r.get("document_analyse", "NON")
         fname = r.get("filename_base", r.get("filename", f"Document_{ix}"))
         p_dt = wdoc.add_paragraph()
         p_dt.paragraph_format.space_before = Pt(6)
-        rnum = p_dt.add_run(f"Document {ix}/{n_docs}  ")
+        rnum = p_dt.add_run(f"Document {ix}/{len(docs_for_b2)}  ")
         rnum.font.bold = True; rnum.font.size = Pt(11); rnum.font.color.rgb = _D_NAVY
         rbdg = p_dt.add_run(f"[{bdg}]  ")
         rbdg.font.bold = True; rbdg.font.size = Pt(11)
@@ -2155,7 +2197,7 @@ def generate_report_word(
         ]
         _w_kv_table(wdoc, detail_rows, col1_cm=4.0)
 
-        if ix < n_docs:
+        if ix < len(docs_for_b2):
             psd = wdoc.add_paragraph("_" * 90)
             psd.runs[0].font.color.rgb = RGBColor(0xE8, 0xE4, 0xDF); psd.runs[0].font.size = Pt(4)
 
@@ -2435,7 +2477,3 @@ def health():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=PORT, debug=False)
-<<<<<<< codex/structurer-tableaux-section-b.2-pdf-et-docx
-=======
-
->>>>>>> main
