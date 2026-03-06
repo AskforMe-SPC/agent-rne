@@ -1765,10 +1765,7 @@ def generate_report_pdf(
         fam = _display_family_label(r.get("famille"))
         status_raw = str(r.get("document_analyse") or "").upper()
         status_label = "OUI" if status_raw == "OUI" else "NON"
-        cleaned_desc = _clean_descriptif(r.get("descriptif"))
-        display_description = "Analyse non disponible pour ce document." if status_label == "NON" else (
-            cleaned_desc if cleaned_desc else "Aucune description exploitable extraite."
-        )
+        display_description = "Pas de description disponible dans cette version."
         meta_rows: List[Any] = [
             ("Nom du fichier", f"{r.get('filename_base', 'Document')}.pdf"),
             ("Famille", fam),
@@ -2184,10 +2181,7 @@ def generate_report_word(
 
         display_type = _w_display_type_label(r)
         status_label = "OUI" if str(r.get("document_analyse") or "").upper() == "OUI" else "NON"
-        cleaned_desc = _w_clean_descriptif(r.get("descriptif"))
-        display_description = "Analyse non disponible pour ce document." if status_label == "NON" else (
-            cleaned_desc if cleaned_desc else "Aucune description exploitable extraite."
-        )
+        display_description = "Pas de description disponible dans cette version."
         detail_rows = [
             ("Date de d\u00e9p\u00f4t", r.get("date_depot", "")),
             ("Famille",                 _w_display_family_label(r.get("famille"))),
