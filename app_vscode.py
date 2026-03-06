@@ -1591,7 +1591,7 @@ def generate_report_pdf(
     attestation_url = f"https://data.inpi.fr/export/companies?format=pdf&ids=[%22{siren}%22]"
     story.append(
         RLPara(
-            f"""<link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="12">👉 Télécharcher l'attestation d'immatriculation au Restre National des Entreprises</font></u></link>""",
+            f"""<link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="11">👉 URL Cliquable</font></u></link>""",
             sty["RBd"],
         )
     )
@@ -1621,7 +1621,7 @@ def generate_report_pdf(
         [RLPara("Documents juridiques", sty["RTd"]), RLPara(str(company_summary.get("nb_documents_juridiques", n_docs_juridiques)), sty["RTd"])],
         [RLPara("Actes détectés", sty["RTd"]), RLPara(str(company_summary.get("nb_actes", n_actes)), sty["RTd"])],
     ]
-    sum_tbl = Table(sum_rows, colWidths=[8.0 * cm, 3.0 * cm], hAlign="LEFT")
+    sum_tbl = Table(sum_rows, colWidths=[cw - 2.0 * cm, 2.0 * cm], hAlign="LEFT")
     sum_style: List[Any] = [
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
@@ -1659,7 +1659,7 @@ def generate_report_pdf(
                            RLPara(_rx(r["famille"]), sty["RTd"]), RLPara(_rx(nat), sty["RTd"]),
                            RLPara(_rx(composition), sty["RTd"]),
                            RLPara(bdg, a_s)])
-        bw = [0.9*cm, 2.7*cm, 3.1*cm, 6.2*cm, cw-0.9*cm-2.7*cm-3.1*cm-6.2*cm-2*cm, 2*cm]
+        bw = [1.6*cm, 2.7*cm, 3.1*cm, 6.2*cm, cw-1.6*cm-2.7*cm-3.1*cm-6.2*cm-2*cm, 2*cm]
         bt = Table(b_rows, colWidths=bw)
         bts: List[Any] = [("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),5),
                 ("BOTTOMPADDING",(0,0),(-1,-1),5),("LEFTPADDING",(0,0),(-1,-1),6),
@@ -2433,3 +2433,7 @@ def health():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=PORT, debug=False)
+<<<<<<< codex/structurer-tableaux-section-b.2-pdf-et-docx
+=======
+
+>>>>>>> main
