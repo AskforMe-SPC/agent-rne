@@ -1591,7 +1591,7 @@ def generate_report_pdf(
     attestation_url = f"https://data.inpi.fr/export/companies?format=pdf&ids=[%22{siren}%22]"
     story.append(
         RLPara(
-            f"""<link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="12">👉 Télécharcher l'attestation d'immatriculation au Restre National des Entreprises</font></u></link>""",
+            f"""<link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="11">👉 URL Cliquable</font></u></link>""",
             sty["RBd"],
         )
     )
@@ -2425,5 +2425,4 @@ def health():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=PORT, debug=False)
-
 
