@@ -1664,7 +1664,7 @@ def generate_report_pdf(
                            RLPara(_rx(r["famille"]), sty["RTd"]), RLPara(_rx(nat), sty["RTd"]),
                            RLPara(_rx(composition), sty["RTd"]),
                            RLPara(bdg, a_s)])
-        bw = [1.6*cm, 2.7*cm, 3.1*cm, 6.2*cm, cw-1.6*cm-2.7*cm-3.1*cm-6.2*cm-2*cm, 2*cm]
+        bw = [1.6*cm, 2.7*cm, 3.1*cm, 7.2*cm, cw-1.6*cm-2.7*cm-3.1*cm-7.2*cm-2*cm, 2*cm]
         bt = Table(b_rows, colWidths=bw)
         bts: List[Any] = [("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),5),
                 ("BOTTOMPADDING",(0,0),(-1,-1),5),("LEFTPADDING",(0,0),(-1,-1),6),
