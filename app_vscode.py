@@ -1220,7 +1220,7 @@ def _rne_kv_table(rows: List[Any], sty: Any, col1: float = 5.5 * cm, total_w: Op
     if total_w is None:
         total_w = _PW - 3.5 * cm
     col2 = total_w - col1
-    data = [[RLPara(f"<b>{_rx(lbl)}</b>", sty["RLbl"]), RLPara(_rx(str(val)), sty["RVal"])]
+    data = [[RLPara(f"<b>{_rx(lbl)}</b>", sty["RLbl"]), RLPara(_rx(str(val)).replace("\n", "<br/>"), sty["RVal"])]
             for lbl, val in rows]
     ts: List[Any] = [
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -1698,6 +1698,18 @@ def generate_report_pdf(
         prefix = "Actes/" if fam == "ACTE" else "Bilans/"
         return f"{prefix}{row.get('filename_base', 'Document')}.pdf"
 
+    def _display_family_label(raw_family: Any) -> str:
+        fam = str(raw_family or "").strip().upper()
+        if fam.startswith("COMP"):
+            return "BILAN"
+        return str(raw_family or "").strip() or "Document"
+
+    def _detected_acts_value(row: Dict[str, Any], display_type: str) -> str:
+        labels = [str(x).strip() for x in (row.get("actes_labels") or []) if str(x).strip()]
+        if not labels:
+            labels = [display_type]
+        return "\n".join(f"{idx} - {lbl}" for idx, lbl in enumerate(labels, 1))
+
     def _clean_descriptif(v: Any) -> str:
         s = str(v or "").strip()
         if not s:
@@ -1728,7 +1740,7 @@ def generate_report_pdf(
         ]))
         story.append(title_tbl)
 
-        fam = str(r.get("famille") or "").strip() or "Document"
+        fam = _display_family_label(r.get("famille"))
         status_raw = str(r.get("document_analyse") or "").upper()
         status_label = "OUI" if status_raw == "OUI" else "NON"
         cleaned_desc = _clean_descriptif(r.get("descriptif"))
@@ -1738,26 +1750,11 @@ def generate_report_pdf(
         meta_rows: List[Any] = [
             ("Nom du fichier", f"{r.get('filename_base', 'Document')}.pdf"),
             ("Famille", fam),
-            ("Type de document", display_type),
             ("Statut d'analyse", status_label),
+            ("Nombre d'actes détectés", _detected_acts_value(r, display_type)),
+            ("Description", display_description),
         ]
-        if str(r.get("famille") or "").upper() == "ACTE":
-            meta_rows.append(("Nombre d'actes détectés", str(int(r.get("nb_actes_in_doc") or 1))))
-        meta_rows.append(("Description", display_description))
         story.append(_rne_kv_table(meta_rows, sty, col1=5.3*cm, total_w=cw))
-
-        labels = [str(x).strip() for x in (r.get("actes_labels") or []) if str(x).strip()]
-        if str(r.get("famille") or "").upper() == "ACTE" and labels:
-            story.append(Spacer(1, 1.5 * mm))
-            story.append(RLPara("Actes identifiés :", sty["RLbl"]))
-            for lbl in labels:
-                story.append(RLPara(f"- {_rx(lbl)}", sty["RBd"]))
-
-        nb_sub = int(r.get("nb_actes_in_doc") or 1)
-        if str(r.get("famille") or "").upper() == "ACTE":
-            if nb_sub > 1:
-                story.append(Spacer(1, 1.5 * mm))
-                story.append(RLPara(f"Document composite comprenant {nb_sub} actes.", sty["RBd"]))
 
         if ix < n_docs:
             story.append(Spacer(1, 3*mm))
@@ -2085,6 +2082,48 @@ def generate_report_word(
                 ix - 1)
 
     _w_add_heading2(wdoc, "B.2", "D\u00e9tail des documents")
+
+    def _w_display_type_label(row: Dict[str, Any]) -> str:
+        tl = str(row.get("typeLibelle") or row.get("nature") or row.get("typeDocument") or "").strip()
+        if tl and tl.upper() not in {"N/A", "NA", "-", "—"}:
+            return tl
+        labels = [str(x).strip() for x in (row.get("actes_labels") or []) if str(x).strip()]
+        if labels:
+            return " + ".join(labels[:4])
+        fam = str(row.get("famille") or "").upper()
+        if fam.startswith("COMP"):
+            return "Comptes annuels"
+        if fam == "ACTE":
+            return "Acte juridique"
+        return "Document non typé"
+
+    def _w_display_family_label(raw_family: Any) -> str:
+        fam = str(raw_family or "").strip().upper()
+        if fam.startswith("COMP"):
+            return "BILAN"
+        return str(raw_family or "").strip() or "Document"
+
+    def _w_clean_descriptif(v: Any) -> str:
+        s = str(v or "").strip()
+        if not s:
+            return ""
+        chunks = [re.sub(r"\s+", " ", c).strip(" -|;") for c in re.split(r"\s*\|\s*|\s*;\s*", s) if c.strip()]
+        out: List[str] = []
+        seen = set()
+        for c in chunks:
+            k = c.casefold()
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append(c)
+        return "\n".join(out[:12])
+
+    def _w_detected_acts_value(row: Dict[str, Any], display_type: str) -> str:
+        labels = [str(x).strip() for x in (row.get("actes_labels") or []) if str(x).strip()]
+        if not labels:
+            labels = [display_type]
+        return "\n".join(f"{idx} - {lbl}" for idx, lbl in enumerate(labels, 1))
+
     for ix, r in enumerate(norm_docs, 1):
         wdoc.add_paragraph()
         bdg = r.get("document_analyse", "NON")
@@ -2099,52 +2138,21 @@ def generate_report_word(
         rnm = p_dt.add_run(f"{fname}.pdf")
         rnm.font.size = Pt(11); rnm.font.color.rgb = _D_NAVY
 
-        tl = r.get("typeLibelle") or r.get("nature") or r.get("typeDocument") or ""
+        display_type = _w_display_type_label(r)
+        status_label = "OUI" if str(r.get("document_analyse") or "").upper() == "OUI" else "NON"
+        cleaned_desc = _w_clean_descriptif(r.get("descriptif"))
+        display_description = "Analyse non disponible pour ce document." if status_label == "NON" else (
+            cleaned_desc if cleaned_desc else "Aucune description exploitable extraite."
+        )
         detail_rows = [
             ("Date de d\u00e9p\u00f4t", r.get("date_depot", "")),
-            ("Famille",                 r.get("famille", "")),
-            ("Nature INPI",             tl),
+            ("Famille",                 _w_display_family_label(r.get("famille"))),
+            ("Statut d'analyse",        status_label),
+            ("Nombre d'actes détectés", _w_detected_acts_value(r, display_type)),
+            ("Description",             display_description),
         ]
-        nb_sub = int(r.get("nb_actes_in_doc") or 1)
-        if str(r.get("famille") or "").upper() == "ACTE":
-            if nb_sub > 1:
-                detail_rows.append(("Document composite", f"Document composite comportant {nb_sub} actes"))
-            else:
-                detail_rows.append(("Document composite", "Document comportant 1 acte"))
         _w_kv_table(wdoc, detail_rows, col1_cm=4.0)
-        labels = [str(x).strip() for x in (r.get("actes_labels") or []) if str(x).strip()]
-        if labels:
-            p_lbl_act = wdoc.add_paragraph()
-            p_lbl_act.paragraph_format.space_before = Pt(4)
-            rl_act = p_lbl_act.add_run("Actes détectés")
-            rl_act.font.bold = True
-            rl_act.font.size = Pt(9)
-            for act_lbl in labels:
-                p_a = wdoc.add_paragraph(f"•  {act_lbl}")
-                p_a.runs[0].font.size = Pt(9.5)
 
-        descriptif = r.get("descriptif") or r.get("description") or ""
-        if descriptif:
-            p_lbl = wdoc.add_paragraph()
-            p_lbl.paragraph_format.space_before = Pt(4)
-            rl = p_lbl.add_run("Descriptif")
-            rl.font.bold = True; rl.font.size = Pt(9); rl.font.color.rgb = _D_MUTED
-            for dl in _w_strip_md(descriptif.strip()).split("\n"):
-                ds = dl.strip()
-                if ds:
-                    pd = wdoc.add_paragraph(ds); pd.runs[0].font.size = Pt(9.5)
-            texte = r.get("texte_extrait") or r.get("texte") or ""
-            if texte:
-                p_te_lbl = wdoc.add_paragraph()
-                rte = p_te_lbl.add_run("TEXTE EXTRAIT :")
-                rte.font.bold = True; rte.font.size = Pt(9); rte.font.color.rgb = _D_MUTED
-                excerpt = texte.strip()[:600] + ("\u2026" if len(texte.strip()) > 600 else "")
-                pte = wdoc.add_paragraph(excerpt)
-                pte.runs[0].font.size = Pt(8.5); pte.runs[0].font.color.rgb = _D_MUTED
-        else:
-            pnd = wdoc.add_paragraph("Aucun descriptif disponible.")
-            pnd.runs[0].font.italic = True; pnd.runs[0].font.size = Pt(8.5)
-            pnd.runs[0].font.color.rgb = _D_MUTED
         if ix < n_docs:
             psd = wdoc.add_paragraph("_" * 90)
             psd.runs[0].font.color.rgb = RGBColor(0xE8, 0xE4, 0xDF); psd.runs[0].font.size = Pt(4)
@@ -2425,5 +2433,3 @@ def health():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=PORT, debug=False)
-
-
