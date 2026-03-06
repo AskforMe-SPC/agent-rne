@@ -1714,6 +1714,7 @@ def generate_report_pdf(
         s = str(v or "").strip()
         if not s:
             return ""
+        s = re.sub(r"(?is)\s*actes\s+identifi(?:e|é)s?\s*:\s*(?:\n|$).*", "", s).strip()
         chunks = [re.sub(r"\s+", " ", c).strip(" -|;") for c in re.split(r"\s*\|\s*|\s*;\s*", s) if c.strip()]
         out: List[str] = []
         seen = set()
@@ -2107,6 +2108,7 @@ def generate_report_word(
         s = str(v or "").strip()
         if not s:
             return ""
+        s = re.sub(r"(?is)\s*actes\s+identifi(?:e|é)s?\s*:\s*(?:\n|$).*", "", s).strip()
         chunks = [re.sub(r"\s+", " ", c).strip(" -|;") for c in re.split(r"\s*\|\s*|\s*;\s*", s) if c.strip()]
         out: List[str] = []
         seen = set()
