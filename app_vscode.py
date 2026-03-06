@@ -1564,7 +1564,7 @@ def generate_report_pdf(
     story.append(Spacer(1, 1.8 * cm))
     for ml in [f"Date du rapport : {run_date}",
                f"Documents collect\u00e9s : {n_docs}",
-               f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (Documents téléchargés: {n_docs})",
+               f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (dans {n_docs} documents téléchargés)",
                "Source : Registre National des Entreprises (INPI)"]:
         story.append(RLPara(ml, sty["RCvM"])); story.append(Spacer(1, 1.5 * mm))
 
@@ -2027,7 +2027,7 @@ def generate_report_word(
     for ml in [
         f"Date du rapport : {run_date}",
         f"Documents collect\u00e9s : {n_docs}",
-        f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (Documents téléchargés: {n_docs})",
+        f"FICHIERS ANALYSES - Bilans : {n_bilans} | Actes : {n_actes} (dans {n_docs} documents téléchargés)",
         "Source : Registre National des Entreprises (INPI)",
     ]:
         pm = wdoc.add_paragraph()
