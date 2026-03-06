@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip list)",
+      "Bash(.venv/Scripts/pip list)",
+      "Bash(.venv/Scripts/pip install python-docx -q)",
+      "Bash(cat \"c:\\\\Users\\\\askme\\\\Downloads\\\\Agent RNE\\\\Agent_RNE_Expert_\\(PDF\\).ipynb\")",
+      "Bash(python -c \"import sys,json; nb=json.load\\(sys.stdin\\); cells=nb[''cells'']; print\\(f''Total cells: {len\\(cells\\)}''\\); [print\\(f''Cell {i}: {c[\"\"cell_type\"\"]} - {str\\(c[\"\"source\"\"]\\)[:100]}''\\) for i,c in enumerate\\(cells\\) if c[''cell_type'']==''code''][:20]\")",
+      "Bash(python -c \" import sys, json nb = json.load\\(sys.stdin\\) cells = nb[''cells''] # Print cell 7 which seems to contain the main code for i, c in enumerate\\(cells\\): if c[''cell_type''] == ''code'' and i == 7: print\\(''''.join\\(c[''source'']\\)[:8000]\\) \")",
+      "Bash(cat Agent_RNE_Expert_\\\\\\(PDF\\\\\\).ipynb)",
+      "Bash(python3:*)",
+      "Bash(.venv/Scripts/python generate_report.py --siren 983670290)"
+    ]
+  }
+}

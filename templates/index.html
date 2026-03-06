@@ -1,0 +1,1181 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collecteur RNE - Bilans &amp; Actes | Gidoo</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --gidoo: #EF8829;
+            --gidoo-light: #f5a04d;
+            --gidoo-dark: #d47520;
+            --gidoo-glow: rgba(239, 136, 41, 0.08);
+
+            --bg-page: #faf8f6;
+            --bg-card: #ffffff;
+            --bg-soft: #fcfbf9;
+            --bg-input: #f7f6f4;
+
+            --border: #e8e4df;
+            --text: #2c2c2c;
+            --text-muted: #7a7470;
+            --text-dim: #a8a29e;
+
+            --success: #2e7d32;
+            --error: #c62828;
+            --warning: #8a5a16;
+            --warning-bg: #fff7ed;
+            --warning-border: rgba(239, 136, 41, 0.22);
+
+            --radius: 12px;
+            --radius-lg: 16px;
+
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.025);
+
+            --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --mono: "JetBrains Mono", monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-page);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wrapper {
+            flex: 1;
+            width: 100%;
+            padding: 40px 20px 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 760px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header__brand {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 26px;
+        }
+
+        .header__brand img {
+            height: 48px;
+            width: auto;
+        }
+
+        .header__badge {
+            display: inline-block;
+            padding: 5px 14px;
+            background: var(--gidoo-glow);
+            border: 1px solid rgba(239, 136, 41, 0.18);
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gidoo);
+            letter-spacing: 0.45px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .header__title {
+            font-size: clamp(26px, 4vw, 36px);
+            line-height: 1.14;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            letter-spacing: -0.4px;
+        }
+
+        .header__title-top {
+            display: block;
+            font-size: 0.52em;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .header__title-main {
+            display: block;
+            color: var(--gidoo);
+        }
+
+        .header__subtitle {
+            font-size: 18px;
+            line-height: 1.45;
+            font-weight: 600;
+            color: var(--text);
+            max-width: 700px;
+            margin: 0 auto 10px;
+        }
+
+        .header__description {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 690px;
+            margin: 0 auto;
+        }
+
+        .card {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+        }
+
+        .card + .card {
+            margin-top: 18px;
+        }
+
+        .card__header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .card__header::before {
+            content: "";
+            width: 3px;
+            height: 16px;
+            background: var(--gidoo);
+            border-radius: 2px;
+            flex: 0 0 auto;
+        }
+
+        .card__body {
+            padding: 24px;
+        }
+
+        .search-card {
+            margin-top: 28px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14.5px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .field input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .field input:focus {
+            border-color: var(--gidoo);
+            box-shadow: 0 0 0 3px var(--gidoo-glow);
+            background: #fffdfa;
+        }
+
+        .field .hint {
+            margin-top: 5px;
+            font-size: 11.5px;
+            color: var(--text-dim);
+            line-height: 1.45;
+        }
+
+        .form__reassurance {
+            margin: -4px 0 12px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .processing-note {
+            margin: 0 0 16px;
+            padding: 12px 14px;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            border-radius: 10px;
+        }
+
+        .processing-note__title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--warning);
+            margin-bottom: 4px;
+        }
+
+        .processing-note__text {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
+
+        .processing-note__text strong {
+            color: var(--text);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 46px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            background: var(--gidoo);
+            color: #fff;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.05s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--gidoo-dark);
+            box-shadow: 0 4px 14px rgba(239, 136, 41, 0.28);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .btn--ghost {
+            width: auto;
+            min-width: 190px;
+            background: #fff;
+            color: var(--gidoo);
+            border: 1.5px solid rgba(239, 136, 41, 0.32);
+        }
+
+        .btn--ghost:hover {
+            background: #fffaf5;
+            color: var(--gidoo-dark);
+            box-shadow: 0 4px 14px rgba(239, 136, 41, 0.12);
+        }
+
+        .section-card__title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .section-card__intro {
+            font-size: 14.5px;
+            line-height: 1.75;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 6px;
+        }
+
+        .step {
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .step__index {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: var(--gidoo-glow);
+            color: var(--gidoo);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .step__title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .step__text {
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--text-muted);
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .value-item {
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .value-item__title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .value-item__text {
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--text-muted);
+        }
+
+        .progress-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .processing-warning {
+            display: none;
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            border-radius: 10px;
+        }
+
+        .processing-warning.active {
+            display: block;
+        }
+
+        .processing-warning__title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--warning);
+            margin-bottom: 4px;
+        }
+
+        .processing-warning__text {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
+        .processing-warning__line {
+            display: block;
+            margin-bottom: 6px;
+        }
+        .processing-warning__line:last-child {
+            margin-bottom: 0;
+        }
+        .processing-warning__line--eta {
+            display: none;
+        }
+        .processing-warning__line--eta.visible {
+            display: block;
+            white-space: nowrap;
+        }
+
+        .processing-warning__text strong {
+            color: var(--text);
+        }
+
+        .denomination {
+            display: none;
+            padding: 10px 14px;
+            background: var(--gidoo-glow);
+            border: 1px solid rgba(239, 136, 41, 0.18);
+            border-radius: 10px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gidoo-dark);
+            text-align: center;
+        }
+
+        .denomination.visible {
+            display: block;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .progress-percent {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gidoo);
+        }
+
+        .progress-percent.done {
+            color: var(--success);
+        }
+
+        .progress-percent.error {
+            color: var(--error);
+        }
+
+        .stats {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .stat__value {
+            font-family: var(--mono);
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .progress-bar-wrap {
+            height: 6px;
+            background: #ede9e6;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gidoo), var(--gidoo-light));
+            border-radius: 999px;
+            transition: width 0.45s ease;
+        }
+
+        .progress-bar.done {
+            background: var(--success);
+        }
+
+        .progress-bar.error {
+            background: var(--error);
+        }
+
+        .log {
+            background: #faf9f7;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 210px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .log::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .log::-webkit-scrollbar-thumb {
+            background: #d5d0cc;
+            border-radius: 999px;
+        }
+
+        .log__entry {
+            font-family: var(--mono);
+            font-size: 11px;
+            line-height: 1.75;
+            color: var(--text-muted);
+            padding-left: 8px;
+            border-left: 2px solid #e5e0db;
+            margin-bottom: 4px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cta {
+            margin-top: 18px;
+            background: var(--bg-card);
+            border: 2px solid var(--gidoo);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(239, 136, 41, 0.08);
+        }
+
+        .cta__title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .cta__text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto 18px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 8px 20px 30px;
+        }
+
+        .footer__brand {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .footer__brand img {
+            height: 36px;
+            width: auto;
+        }
+
+        .footer__website {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .footer__website a {
+            color: inherit;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer__website a:hover {
+            text-decoration: underline;
+        }
+
+        .footer__tagline {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .footer__legal {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            padding: 12px 24px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text);
+            opacity: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        @media (max-width: 760px) {
+            .steps,
+            .value-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .wrapper {
+                padding: 28px 14px 28px;
+            }
+
+            .header {
+                margin-bottom: 22px;
+            }
+
+            .header__subtitle {
+                font-size: 16px;
+            }
+
+            .header__description {
+                font-size: 14px;
+            }
+
+            .card__header,
+            .card__body,
+            .cta {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .progress-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .cta__title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <main class="page">
+
+            <header class="header">
+                <div class="header__brand">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Gidoo" />
+                </div>
+
+                <div class="header__badge">Service gratuit</div>
+
+                <h1 class="header__title">
+                    <span class="header__title-top">Collecteur RNE</span>
+                    <span class="header__title-main">Bilans &amp; Actes</span>
+                </h1>
+
+                <p class="header__description">
+                    Collecte, nomme et structure automatiquement les documents déposés par une entreprise
+                </p>
+            </header>
+
+            <section class="card search-card">
+                <div class="card__header">Renseignez un SIREN pour lancer la collecte</div>
+                <div class="card__body">
+                    <form id="collect-form">
+                        <div class="field">
+                            <label for="siren">Numéro SIREN</label>
+                            <input
+                                id="siren"
+                                name="siren"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="11"
+                                placeholder="123 456 789"
+                                autocomplete="off"
+                            />
+                            <div class="hint">9 chiffres - identifiant unique de l'entreprise recherchee</div>
+                        </div>
+
+                        <div class="form__reassurance">
+                            Sources officielles INPI / RNE
+                        </div>
+
+                        <button type="submit" class="btn">Lancer la collecte</button>
+                    </form>
+
+                    <div id="progress-section" class="progress-section">
+                        <div id="processing-warning" class="processing-warning active">
+                            <div class="processing-warning__title">Collecte en cours</div>
+                            <div class="processing-warning__text">
+                                <span id="eta-line" class="processing-warning__line processing-warning__line--eta">
+                                    Temps estimé : <strong id="eta-minutes"></strong>&nbsp;&nbsp;&nbsp;Volume détecté : <strong id="eta-volume"></strong>
+                                </span>
+                                <span class="processing-warning__line">
+                                    <strong>Merci de ne pas fermer ni recharger cette page</strong> pendant le traitement.
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="denomination" class="denomination"></div>
+
+                        <div class="progress-info">
+                            <div id="progress-percent" class="progress-percent">0%</div>
+                            <div class="stats">
+                                <div class="stat">Bilans : <span id="stat-bilans" class="stat__value">0</span></div>
+                                <div class="stat">Actes : <span id="stat-actes" class="stat__value">0</span></div>
+                                <div class="stat">Etat : <span id="stat-status" class="stat__value">Initialisation</span></div>
+                            </div>
+                        </div>
+
+                        <div class="progress-bar-wrap">
+                            <div id="progress-bar" class="progress-bar"></div>
+                        </div>
+
+                        <div id="log" class="log"></div>
+
+                        <button id="download-btn" class="btn" type="button" style="display:none; margin-top:14px;">
+                            Télécharger le dossier
+                        </button>
+                        <button id="new-search-btn" class="btn" type="button" style="display:none; margin-top:10px;">
+                            Lancer une nouvelle recherche
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card__body">
+                    <h2 class="section-card__title">Comment fonctionne le collecteur ?</h2>
+                    <p class="section-card__intro">
+                        Le collecteur interroge les sources officielles du RNE a partir d'un numero SIREN, recupere les informations et documents disponibles, puis transforme ces depots bruts en un dossier documentaire structure, homogene et immediatement exploitable.
+                    </p>
+
+                    <div class="steps">
+                        <article class="step">
+                            <div class="step__index">1</div>
+                            <h3 class="step__title">Collecte des données et documents</h3>
+                            <p class="step__text">
+                                Le collecteur identifie l'entreprise et recupere les comptes annuels et actes juridiques disponibles depuis les sources officielles.
+                            </p>
+                        </article>
+
+                        <article class="step">
+                            <div class="step__index">2</div>
+                            <h3 class="step__title">Structuration intelligente</h3>
+                            <p class="step__text">
+                                Chaque fichier est renommé de manière homogène, les documents comportant plusieurs actes sont détectés automatiquement et un descriptif bref est produit pour chaque pièce.
+                            </p>
+                        </article>
+
+                        <article class="step">
+                            <div class="step__index">3</div>
+                            <h3 class="step__title">Restitution prete a l'emploi</h3>
+                            <p class="step__text">
+                                L'ensemble est livre dans un fichier ZIP hierarchise avec rapport synthetique, pret a etre copie dans votre GED, CRM ou dossier permanent client.
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card__body">
+                    <h2 class="section-card__title">Quelle valeur ajoutée pour un cabinet ?</h2>
+                    <p class="section-card__intro">
+                        Ce collecteur ne se limite pas à télécharger des pièces. Il transforme des dépôts RNE bruts en un dossier documentaire lisible, ordonné et immédiatement réutilisable dans les outils du cabinet.
+                    </p>
+
+                    <div class="value-grid">
+                        <article class="value-item">
+                            <h3 class="value-item__title">Nommage intelligent</h3>
+                            <p class="value-item__text">
+                                Les fichiers sont renommés automatiquement de manière claire, homogène et exploitable sans retraitement manuel.
+                            </p>
+                        </article>
+
+                        <article class="value-item">
+                            <h3 class="value-item__title">Détection des documents composites</h3>
+                            <p class="value-item__text">
+                                Le collecteur repere automatiquement les documents comportant plusieurs actes afin d'ameliorer la lisibilite et le controle des pieces.
+                            </p>
+                        </article>
+
+                        <article class="value-item">
+                            <h3 class="value-item__title">Dossier prêt à intégrer</h3>
+                            <p class="value-item__text">
+                                Le ZIP généré est hiérarchisé et pensé pour un copier-coller direct dans une GED, un CRM ou un dossier permanent client.
+                            </p>
+                        </article>
+
+                        <article class="value-item">
+                            <h3 class="value-item__title">Rapport synthétique exploitable</h3>
+                            <p class="value-item__text">
+                                Un rapport de synthese accompagne les documents disponibles pour faciliter la consultation, la revue et l'exploitation metier.
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cta">
+                <h2 class="cta__title">Intégrer cette collecte dans votre Cabinet ?</h2>
+                <p class="cta__text">
+                    Nous etudions l'integration de ce collecteur a vos processus metier, a vos logiciels de production et a vos outils de gestion interne afin d'en faire un levier concret d'efficacite operationnelle.
+                </p>
+                <a href="mailto:contact@gidoo.fr" class="btn btn--ghost">Contactez-nous</a>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="footer__brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Gidoo" />
+        </div>
+        <div class="footer__website">
+            <a href="https://www.gidoo.fr" target="_blank" rel="noopener noreferrer">www.gidoo.fr</a>
+        </div>
+        <div class="footer__legal">&copy; Gidoo - 2026</div>
+    </footer>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const form = document.getElementById("collect-form");
+        const sirenInput = document.getElementById("siren");
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        const progressSection = document.getElementById("progress-section");
+        const processingWarning = document.getElementById("processing-warning");
+        const denominationEl = document.getElementById("denomination");
+        const progressBar = document.getElementById("progress-bar");
+        const progressPercent = document.getElementById("progress-percent");
+        const logEl = document.getElementById("log");
+        const statBilans = document.getElementById("stat-bilans");
+        const statActes = document.getElementById("stat-actes");
+        const statStatus = document.getElementById("stat-status");
+        const etaLineEl = document.getElementById("eta-line");
+        const etaMinutesEl = document.getElementById("eta-minutes");
+        const etaVolumeEl = document.getElementById("eta-volume");
+        const downloadBtn = document.getElementById("download-btn");
+        const newSearchBtn = document.getElementById("new-search-btn");
+        const toast = document.getElementById("toast");
+
+        let pollTimer = null;
+        let currentTaskId = null;
+        let isProcessing = false;
+        let lastStepCount = 0;
+        let zipDownloaded = false;
+
+        function sanitizeSirenDisplay(value) {
+            return value.replace(/\D/g, "").slice(0, 9).replace(/(\d{3})(?=\d)/g, "$1 ").trim();
+        }
+
+        sirenInput.addEventListener("input", (e) => {
+            const raw = e.target.value.replace(/\D/g, "").slice(0, 9);
+            e.target.value = sanitizeSirenDisplay(raw);
+        });
+
+        function showToast(message, type = "") {
+            toast.textContent = message;
+            toast.className = "toast show";
+            if (type) toast.classList.add(type);
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2600);
+        }
+
+        function addLog(message) {
+            const entry = document.createElement("div");
+            entry.className = "log__entry";
+            entry.textContent = message;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function resetProgress() {
+            progressSection.classList.remove("active");
+            processingWarning.classList.add("active");
+            denominationEl.classList.remove("visible");
+            denominationEl.textContent = "";
+            progressBar.style.width = "0%";
+            progressBar.classList.remove("done", "error");
+            progressPercent.textContent = "0%";
+            progressPercent.classList.remove("done", "error");
+            statBilans.textContent = "0";
+            statActes.textContent = "0";
+            statStatus.textContent = "Initialisation";
+            etaMinutesEl.textContent = "";
+            etaVolumeEl.textContent = "";
+            etaLineEl.classList.remove("visible");
+            logEl.innerHTML = "";
+            downloadBtn.style.display = "none";
+            downloadBtn.onclick = null;
+            newSearchBtn.style.display = "none";
+            submitBtn.style.display = "inline-flex";
+            submitBtn.textContent = "Lancer la collecte";
+            submitBtn.dataset.mode = "collect";
+            isProcessing = false;
+            lastStepCount = 0;
+            zipDownloaded = false;
+
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+        }
+
+        function updateProgress(data) {
+            const pct = Math.max(0, Math.min(100, data.progress || 0));
+            progressSection.classList.add("active");
+            progressBar.style.width = pct + "%";
+            progressPercent.textContent = pct + "%";
+            if (!zipDownloaded) submitBtn.style.display = "none";
+
+            if (data.denomination) {
+                denominationEl.textContent = data.denomination;
+                denominationEl.classList.add("visible");
+            }
+
+            if (typeof data.bilans_count !== "undefined") {
+                statBilans.textContent = data.bilans_count;
+            }
+
+            if (typeof data.actes_count !== "undefined") {
+                statActes.textContent = data.actes_count;
+            }
+
+            const hasVolume = typeof data.total_docs !== "undefined" && data.total_docs !== null;
+            const hasEta = typeof data.estimated_minutes !== "undefined" && data.estimated_minutes !== null;
+            if (hasVolume && hasEta) {
+                const n = parseInt(data.total_docs, 10) || 0;
+                const mins = parseInt(data.estimated_minutes, 10) || 0;
+                etaVolumeEl.textContent = `${n} document${n > 1 ? "s" : ""}`;
+                etaMinutesEl.textContent = mins > 0 ? `${mins} minute${mins > 1 ? "s" : ""}` : "Moins d'une minute";
+                etaLineEl.classList.add("visible");
+            } else {
+                etaLineEl.classList.remove("visible");
+            }
+
+            if (data.status) {
+                const statusMap = {
+                    pending: "Initialisation",
+                    running: "En cours",
+                    completed: "Termine",
+                    error: "Erreur",
+                };
+                statStatus.textContent = statusMap[data.status] || data.status;
+            }
+
+            if (Array.isArray(data.steps) && data.steps.length > lastStepCount) {
+                for (let i = lastStepCount; i < data.steps.length; i++) {
+                    if (data.steps[i] && data.steps[i].message) addLog(data.steps[i].message);
+                }
+                lastStepCount = data.steps.length;
+            }
+
+            if (data.status === "completed") {
+                progressBar.classList.add("done");
+                progressPercent.classList.add("done");
+                statStatus.textContent = "Termine";
+                downloadBtn.style.display = "inline-flex";
+                submitBtn.style.display = "inline-flex";
+                processingWarning.classList.remove("active");
+                isProcessing = false;
+
+                downloadBtn.onclick = () => {
+                    if (currentTaskId) {
+                        zipDownloaded = true;
+                        downloadBtn.style.display = "none";
+                        newSearchBtn.style.display = "none";
+                        progressSection.classList.remove("active");
+                        processingWarning.classList.remove("active");
+                        denominationEl.classList.remove("visible");
+                        logEl.innerHTML = "";
+                        submitBtn.style.display = "inline-flex";
+                        submitBtn.textContent = "Lancer une nouvelle recherche";
+                        submitBtn.dataset.mode = "reset";
+                        window.location.href = `/api/download/${currentTaskId}`;
+                    }
+                };
+
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+            }
+
+            if (data.status === "error") {
+                progressBar.classList.add("error");
+                progressPercent.classList.add("error");
+                statStatus.textContent = "Erreur";
+                submitBtn.style.display = "inline-flex";
+                processingWarning.classList.remove("active");
+                isProcessing = false;
+
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+
+                if (Array.isArray(data.errors) && data.errors.length) {
+                    showToast(data.errors[0], "error");
+                }
+            }
+        }
+
+        async function pollStatus(taskId) {
+            try {
+                const response = await fetch(`/api/status/${taskId}`);
+                if (!response.ok) {
+                    throw new Error("Impossible de recuperer le statut.");
+                }
+
+                const data = await response.json();
+                updateProgress(data);
+            } catch (error) {
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+                isProcessing = false;
+                processingWarning.classList.remove("active");
+                showToast(error.message || "Erreur de suivi de la collecte.", "error");
+            }
+        }
+
+        window.addEventListener("beforeunload", (event) => {
+            if (!isProcessing) return;
+            event.preventDefault();
+            event.returnValue = "";
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            if (submitBtn.dataset.mode === "reset") {
+                resetProgress();
+                sirenInput.value = "";
+                currentTaskId = null;
+                progressSection.classList.remove("active");
+                return;
+            }
+
+            const siren = sirenInput.value.replace(/\D/g, "");
+            if (siren.length !== 9) {
+                showToast("Le SIREN doit contenir exactement 9 chiffres.", "error");
+                return;
+            }
+
+            resetProgress();
+            zipDownloaded = false;
+            submitBtn.style.display = "none";
+            progressSection.classList.add("active");
+            processingWarning.classList.add("active");
+            statStatus.textContent = "Lancement";
+            etaMinutesEl.textContent = "";
+            etaVolumeEl.textContent = "";
+            etaLineEl.classList.remove("visible");
+            addLog("Initialisation de la collecte...");
+            isProcessing = true;
+
+            try {
+                const response = await fetch("/api/collect", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ siren })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Impossible de lancer la collecte.");
+                }
+
+                currentTaskId = data.job_id;
+                showToast("Collecte lancee avec succes.", "success");
+
+                pollStatus(currentTaskId);
+                pollTimer = setInterval(() => pollStatus(currentTaskId), 1500);
+            } catch (error) {
+                statStatus.textContent = "Erreur";
+                submitBtn.style.display = "inline-flex";
+                processingWarning.classList.remove("active");
+                isProcessing = false;
+                showToast(error.message || "Erreur au lancement de la collecte.", "error");
+            }
+        });
+
+        newSearchBtn.addEventListener("click", () => {
+            resetProgress();
+            sirenInput.value = "";
+            currentTaskId = null;
+            progressSection.classList.remove("active");
+        });
+    </script>
+</body>
+</html>
+
+
