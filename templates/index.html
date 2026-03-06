@@ -402,11 +402,12 @@
 
         .processing-warning {
             display: none;
-            margin-bottom: 14px;
+            margin-top: 14px;
             padding: 12px 14px;
             background: var(--warning-bg);
             border: 1px solid var(--warning-border);
             border-radius: 10px;
+            text-align: center;
         }
 
         .processing-warning.active {
@@ -417,7 +418,7 @@
             font-size: 12.5px;
             font-weight: 700;
             color: var(--warning);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .processing-warning__text {
@@ -437,7 +438,6 @@
         }
         .processing-warning__line--eta.visible {
             display: block;
-            white-space: nowrap;
         }
 
         .processing-warning__text strong {
@@ -763,18 +763,6 @@
                     </form>
 
                     <div id="progress-section" class="progress-section">
-                        <div id="processing-warning" class="processing-warning">
-                            <div class="processing-warning__title">Collecte en cours</div>
-                            <div class="processing-warning__text">
-                                <span id="eta-line" class="processing-warning__line processing-warning__line--eta">
-                                    Temps estimé : <strong id="eta-minutes"></strong>&nbsp;&nbsp;&nbsp;Volume détecté : <strong id="eta-volume"></strong>
-                                </span>
-                                <span class="processing-warning__line">
-                                    <strong>Merci de ne pas fermer ni recharger cette page</strong> pendant le traitement.
-                                </span>
-                            </div>
-                        </div>
-
                         <div id="denomination" class="denomination"></div>
 
                         <div class="progress-info">
@@ -791,6 +779,17 @@
                         </div>
 
                         <div id="log" class="log"></div>
+
+                        <div id="processing-warning" class="processing-warning">
+                            <div class="processing-warning__text">
+                                <span id="eta-line" class="processing-warning__line processing-warning__line--eta">
+                                    <strong>Collecte en cours - Temps estimé : <span id="eta-minutes"></span> / Nombre de documents : <span id="eta-volume"></span></strong>
+                                </span>
+                                <span class="processing-warning__line">
+                                    <strong>Merci de ne pas fermer ni recharger cette page pendant le traitement.</strong>
+                                </span>
+                            </div>
+                        </div>
 
                         <button id="download-btn" class="btn" type="button" style="display:none; margin-top:14px;">
                             Télécharger le dossier
@@ -1011,14 +1010,13 @@
             if (hasVolume && hasEta) {
                 const n = parseInt(data.total_docs, 10) || 0;
                 const mins = (parseInt(data.estimated_minutes, 10) || 0) / 10;
-                etaVolumeEl.textContent = `${n} document${n > 1 ? "s" : ""}`;
+                etaVolumeEl.textContent = `${n}`;
                 if (mins >= 1) {
-                    const formattedMins = Number.isInteger(mins) ? mins : mins.toFixed(1);
-                    etaMinutesEl.textContent = `${formattedMins} minute${mins > 1 ? "s" : ""}`;
+                    etaMinutesEl.textContent = `${Math.round(mins)} minutes`;
                 } else {
-                    etaMinutesEl.textContent = "Moins d'une minute";
+                    etaMinutesEl.textContent = "1 minutes";
                 }
-                etaLineEl.classList.toggle("visible", denominationEl.classList.contains("visible"));
+                etaLineEl.classList.add("visible");
             } else {
                 etaLineEl.classList.remove("visible");
             }
@@ -1175,4 +1173,3 @@
     </script>
 </body>
 </html>
-
