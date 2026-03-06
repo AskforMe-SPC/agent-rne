@@ -444,23 +444,6 @@
             color: var(--text);
         }
 
-        .denomination {
-            display: none;
-            padding: 10px 14px;
-            background: var(--gidoo-glow);
-            border: 1px solid rgba(239, 136, 41, 0.18);
-            border-radius: 10px;
-            margin-bottom: 14px;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--gidoo-dark);
-            text-align: center;
-        }
-
-        .denomination.visible {
-            display: block;
-        }
-
         .progress-info {
             display: flex;
             justify-content: space-between;
@@ -763,8 +746,6 @@
                     </form>
 
                     <div id="progress-section" class="progress-section">
-                        <div id="denomination" class="denomination"></div>
-
                         <div class="progress-info">
                             <div id="progress-percent" class="progress-percent">0%</div>
                             <div class="stats">
@@ -793,9 +774,6 @@
 
                         <button id="download-btn" class="btn" type="button" style="display:none; margin-top:14px;">
                             Télécharger le dossier
-                        </button>
-                        <button id="new-search-btn" class="btn" type="button" style="display:none; margin-top:10px;">
-                            Lancer une nouvelle recherche
                         </button>
                     </div>
                 </div>
@@ -905,7 +883,6 @@
 
         const progressSection = document.getElementById("progress-section");
         const processingWarning = document.getElementById("processing-warning");
-        const denominationEl = document.getElementById("denomination");
         const progressBar = document.getElementById("progress-bar");
         const progressPercent = document.getElementById("progress-percent");
         const logEl = document.getElementById("log");
@@ -916,7 +893,6 @@
         const etaMinutesEl = document.getElementById("eta-minutes");
         const etaVolumeEl = document.getElementById("eta-volume");
         const downloadBtn = document.getElementById("download-btn");
-        const newSearchBtn = document.getElementById("new-search-btn");
         const toast = document.getElementById("toast");
 
         let pollTimer = null;
@@ -955,8 +931,6 @@
         function resetProgress() {
             progressSection.classList.remove("active");
             processingWarning.classList.add("active");
-            denominationEl.classList.remove("visible");
-            denominationEl.textContent = "";
             progressBar.style.width = "0%";
             progressBar.classList.remove("done", "error");
             progressPercent.textContent = "0%";
@@ -970,7 +944,6 @@
             logEl.innerHTML = "";
             downloadBtn.style.display = "none";
             downloadBtn.onclick = null;
-            newSearchBtn.style.display = "none";
             submitBtn.style.display = "inline-flex";
             submitBtn.textContent = "Lancer la collecte";
             submitBtn.dataset.mode = "collect";
@@ -990,12 +963,6 @@
             progressBar.style.width = pct + "%";
             progressPercent.textContent = pct + "%";
             if (!zipDownloaded) submitBtn.style.display = "none";
-
-            if (data.denomination) {
-                denominationEl.textContent = data.denomination;
-                denominationEl.classList.add("visible");
-                processingWarning.classList.add("active");
-            }
 
             if (typeof data.bilans_count !== "undefined") {
                 statBilans.textContent = data.bilans_count;
@@ -1050,7 +1017,15 @@
                     if (currentTaskId) {
                         zipDownloaded = true;
                         downloadBtn.style.display = "none";
-                        newSearchBtn.style.display = "inline-flex";
+                        progressSection.classList.remove("active");
+                        logEl.innerHTML = "";
+                        progressPercent.textContent = "";
+                        statBilans.textContent = "";
+                        statActes.textContent = "";
+                        statStatus.textContent = "";
+                        submitBtn.style.display = "inline-flex";
+                        submitBtn.textContent = "Lancer une nouvelle recherche";
+                        submitBtn.dataset.mode = "reset";
                         window.location.href = `/api/download/${currentTaskId}`;
                     }
                 };
@@ -1164,12 +1139,6 @@
             }
         });
 
-        newSearchBtn.addEventListener("click", () => {
-            resetProgress();
-            sirenInput.value = "";
-            currentTaskId = null;
-            progressSection.classList.remove("active");
-        });
     </script>
 </body>
 </html>
