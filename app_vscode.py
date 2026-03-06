@@ -1596,7 +1596,7 @@ def generate_report_pdf(
     attestation_url = f"https://data.inpi.fr/export/companies?format=pdf&ids=[%22{siren}%22]"
     story.append(
         RLPara(
-            f"""👉 <link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="11">Télécharger l'attestation d'immatriculation au Registre National des Entreprises</font></u></link>""",
+            f"""<font color="#000000">👉 </font><link href="{_rx(attestation_url)}"><u><font color="#0066CC" size="11">Télécharger l'attestation d'immatriculation au Registre National des Entreprises</font></u></link>""",
             sty["RBd"],
         )
     )
