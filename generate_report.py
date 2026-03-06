@@ -471,7 +471,7 @@ def generate_report_pdf(siren, denomination, rne_data, doc_results, run_date):
             for a in acts:
                 act_rows.append([
                     RLPara(_x(a.get("ape", "\u2014")), sty["Td"]),
-                    RLPara(_x(a.get("desc", "\u2014")), sty["Td"]),
+                    RLPara(_x("Pas de description disponible dans cette version."), sty["Td"]),
                     RLPara(_x(a.get("date", "\u2014")), sty["Td"]),
                 ])
             at = Table(act_rows, colWidths=[4 * cm, cw - 7.5 * cm, 3.5 * cm])
@@ -1048,7 +1048,7 @@ def generate_report_docx(siren, denomination, rne_data, doc_results, run_date):
             for i, a in enumerate(acts):
                 _add_doc_table_row(
                     table_acts,
-                    [a.get("ape", "\u2014"), a.get("desc", "\u2014"), a.get("date", "\u2014")],
+                    [a.get("ape", "\u2014"), "Pas de description disponible dans cette version.", a.get("date", "\u2014")],
                     i,
                 )
         else:
