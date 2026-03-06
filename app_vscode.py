@@ -1549,6 +1549,7 @@ def generate_report_pdf(
     n_docs_juridiques = company_summary.get("nb_documents_juridiques", 0)
     n_actes  = company_summary.get("nb_actes", 0)
     has_bilan_docs = any(str(d.get("famille") or "").upper().startswith("COMP") for d in docs)
+    has_actes_docs = any(str(d.get("famille") or "").upper() == "ACTE" for d in docs)
     split_b2_sections = has_bilan_docs or int(n_bilans or 0) > 0
 
     # ── Couverture ──
@@ -1583,7 +1584,8 @@ def generate_report_pdf(
     ])
     if split_b2_sections:
         toc_lines.insert(-1, (3, "B.2.a", "Comptes Annuels"))
-        toc_lines.insert(-1, (3, "B.2.b", "Actes"))
+        if has_actes_docs:
+            toc_lines.insert(-1, (3, "B.2.b", "Actes"))
     for level, num, title in toc_lines:
         s = sty["RToc1"] if level == 1 else sty["RToc2"]
         clr = ohx if level == 1 else mhx
@@ -1746,6 +1748,7 @@ def generate_report_pdf(
             story.append(RLPara("Aucun compte annuel disponible dans les documents analysés.", sty["RBd"]))
 
     for ix, r in enumerate(docs_for_b2, 1):
+        if has_bilan_docs and has_actes_docs and ix == len(bilan_docs) + 1:
         if split_b2_sections and ix == len(bilan_docs) + 1:
             story.append(PageBreak())
             story.append(RLPara("B.2.b&nbsp;&nbsp;Actes", sty["RH2"]))
@@ -1992,6 +1995,7 @@ def generate_report_word(
     n_docs_juridiques = company_summary.get("nb_documents_juridiques", 0)
     n_actes = sum(1 for d in norm_docs if (d.get("famille") or "").upper() == "ACTE")
     has_bilan_docs = any(str(d.get("famille") or "").upper().startswith("COMP") for d in norm_docs)
+    has_actes_docs = any(str(d.get("famille") or "").upper() == "ACTE" for d in norm_docs)
     split_b2_sections = has_bilan_docs or int(n_bilans or 0) > 0
 
     # ── Couverture ────────────────────────────────────────────────────────────
@@ -2053,7 +2057,8 @@ def generate_report_word(
     ])
     if split_b2_sections:
         toc_lines.insert(-1, (3, "B.2.a", "Comptes Annuels"))
-        toc_lines.insert(-1, (3, "B.2.b", "Actes"))
+        if has_actes_docs:
+            toc_lines.insert(-1, (3, "B.2.b", "Actes"))
     for level, num, ttl in toc_lines:
         pi = wdoc.add_paragraph()
         pi.paragraph_format.space_before = Pt(0); pi.paragraph_format.space_after = Pt(0)
@@ -2168,6 +2173,7 @@ def generate_report_word(
             p.runs[0].font.size = Pt(9.5)
 
     for ix, r in enumerate(docs_for_b2, 1):
+        if has_bilan_docs and has_actes_docs and ix == len(bilan_docs) + 1:
         if split_b2_sections and ix == len(bilan_docs) + 1:
             wdoc.add_page_break()
             _w_add_heading2(wdoc, "B.2.b", "Actes")
