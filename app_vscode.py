@@ -2433,7 +2433,3 @@ def health():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=PORT, debug=False)
-<<<<<<< codex/structurer-tableaux-section-b.2-pdf-et-docx
-=======
-
->>>>>>> main
