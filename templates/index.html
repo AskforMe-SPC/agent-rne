@@ -763,7 +763,7 @@
                     </form>
 
                     <div id="progress-section" class="progress-section">
-                        <div id="processing-warning" class="processing-warning active">
+                        <div id="processing-warning" class="processing-warning">
                             <div class="processing-warning__title">Collecte en cours</div>
                             <div class="processing-warning__text">
                                 <span id="eta-line" class="processing-warning__line processing-warning__line--eta">
@@ -995,6 +995,7 @@
             if (data.denomination) {
                 denominationEl.textContent = data.denomination;
                 denominationEl.classList.add("visible");
+                processingWarning.classList.add("active");
             }
 
             if (typeof data.bilans_count !== "undefined") {
@@ -1009,10 +1010,15 @@
             const hasEta = typeof data.estimated_minutes !== "undefined" && data.estimated_minutes !== null;
             if (hasVolume && hasEta) {
                 const n = parseInt(data.total_docs, 10) || 0;
-                const mins = parseInt(data.estimated_minutes, 10) || 0;
+                const mins = (parseInt(data.estimated_minutes, 10) || 0) / 10;
                 etaVolumeEl.textContent = `${n} document${n > 1 ? "s" : ""}`;
-                etaMinutesEl.textContent = mins > 0 ? `${mins} minute${mins > 1 ? "s" : ""}` : "Moins d'une minute";
-                etaLineEl.classList.add("visible");
+                if (mins >= 1) {
+                    const formattedMins = Number.isInteger(mins) ? mins : mins.toFixed(1);
+                    etaMinutesEl.textContent = `${formattedMins} minute${mins > 1 ? "s" : ""}`;
+                } else {
+                    etaMinutesEl.textContent = "Moins d'une minute";
+                }
+                etaLineEl.classList.toggle("visible", denominationEl.classList.contains("visible"));
             } else {
                 etaLineEl.classList.remove("visible");
             }
@@ -1039,7 +1045,6 @@
                 progressPercent.classList.add("done");
                 statStatus.textContent = "Termine";
                 downloadBtn.style.display = "inline-flex";
-                submitBtn.style.display = "inline-flex";
                 processingWarning.classList.remove("active");
                 isProcessing = false;
 
@@ -1047,14 +1052,7 @@
                     if (currentTaskId) {
                         zipDownloaded = true;
                         downloadBtn.style.display = "none";
-                        newSearchBtn.style.display = "none";
-                        progressSection.classList.remove("active");
-                        processingWarning.classList.remove("active");
-                        denominationEl.classList.remove("visible");
-                        logEl.innerHTML = "";
-                        submitBtn.style.display = "inline-flex";
-                        submitBtn.textContent = "Lancer une nouvelle recherche";
-                        submitBtn.dataset.mode = "reset";
+                        newSearchBtn.style.display = "inline-flex";
                         window.location.href = `/api/download/${currentTaskId}`;
                     }
                 };
@@ -1131,7 +1129,7 @@
             zipDownloaded = false;
             submitBtn.style.display = "none";
             progressSection.classList.add("active");
-            processingWarning.classList.add("active");
+            processingWarning.classList.remove("active");
             statStatus.textContent = "Lancement";
             etaMinutesEl.textContent = "";
             etaVolumeEl.textContent = "";
@@ -1177,5 +1175,4 @@
     </script>
 </body>
 </html>
-
 
