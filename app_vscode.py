@@ -1627,17 +1627,15 @@ def generate_report_pdf(
         [RLPara("Documents juridiques", sty["RTd"]), RLPara(str(company_summary.get("nb_documents_juridiques", n_docs_juridiques)), sty["RTd"])],
         [RLPara("Actes détectés", sty["RTd"]), RLPara(str(company_summary.get("nb_actes", n_actes)), sty["RTd"])],
     ]
-    sum_tbl = Table(sum_rows, colWidths=[cw - 2.0 * cm, 2.0 * cm], hAlign="LEFT")
+    sum_tbl = Table(sum_rows, colWidths=[cw - 2.0 * cm, 2.0 * cm])
     sum_style: List[Any] = [
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
         ("BACKGROUND", (0, 0), (-1, 0), _C_NAVY),
         ("TEXTCOLOR", (0, 0), (-1, 0), white),
-        ("BOX", (0, 0), (-1, -1), 0.3, _C_BORDER),
-        ("INNERGRID", (0, 0), (-1, -1), 0.3, _C_BORDER),
+        ("LINEBELOW", (0, 1), (-1, -1), 0.3, _C_BORDER),
     ]
     for i in range(1, len(sum_rows)):
         sum_style.append(("BACKGROUND", (0, i), (-1, i), _C_LGRAY if i % 2 == 0 else _C_CARD))
