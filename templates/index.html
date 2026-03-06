@@ -400,6 +400,18 @@
             display: block;
         }
 
+        .company-name {
+            display: none;
+            margin: 12px 0 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+
+        .company-name.visible {
+            display: block;
+        }
+
         .processing-warning {
             display: none;
             margin-top: 14px;
@@ -742,6 +754,8 @@
                             Sources officielles INPI / RNE
                         </div>
 
+                        <div id="company-name" class="company-name"></div>
+
                         <button type="submit" class="btn">Lancer la collecte</button>
                     </form>
 
@@ -893,6 +907,7 @@
         const etaMinutesEl = document.getElementById("eta-minutes");
         const etaVolumeEl = document.getElementById("eta-volume");
         const downloadBtn = document.getElementById("download-btn");
+        const companyNameEl = document.getElementById("company-name");
         const toast = document.getElementById("toast");
 
         let pollTimer = null;
@@ -944,6 +959,8 @@
             logEl.innerHTML = "";
             downloadBtn.style.display = "none";
             downloadBtn.onclick = null;
+            companyNameEl.textContent = "";
+            companyNameEl.classList.remove("visible");
             submitBtn.style.display = "inline-flex";
             submitBtn.textContent = "Lancer la collecte";
             submitBtn.dataset.mode = "collect";
@@ -970,6 +987,11 @@
 
             if (typeof data.actes_count !== "undefined") {
                 statActes.textContent = data.actes_count;
+            }
+
+            if (data.denomination) {
+                companyNameEl.textContent = `Entreprise : ${data.denomination}`;
+                companyNameEl.classList.add("visible");
             }
 
             const hasVolume = typeof data.total_docs !== "undefined" && data.total_docs !== null;
@@ -1010,19 +1032,12 @@
                 progressPercent.classList.add("done");
                 statStatus.textContent = "Termine";
                 downloadBtn.style.display = "inline-flex";
-                processingWarning.classList.remove("active");
+                processingWarning.classList.add("active");
                 isProcessing = false;
 
                 downloadBtn.onclick = () => {
                     if (currentTaskId) {
                         zipDownloaded = true;
-                        downloadBtn.style.display = "none";
-                        progressSection.classList.remove("active");
-                        logEl.innerHTML = "";
-                        progressPercent.textContent = "";
-                        statBilans.textContent = "";
-                        statActes.textContent = "";
-                        statStatus.textContent = "";
                         submitBtn.style.display = "inline-flex";
                         submitBtn.textContent = "Lancer une nouvelle recherche";
                         submitBtn.dataset.mode = "reset";
@@ -1102,7 +1117,7 @@
             zipDownloaded = false;
             submitBtn.style.display = "none";
             progressSection.classList.add("active");
-            processingWarning.classList.remove("active");
+            processingWarning.classList.add("active");
             statStatus.textContent = "Lancement";
             etaMinutesEl.textContent = "";
             etaVolumeEl.textContent = "";
