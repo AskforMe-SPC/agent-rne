@@ -752,7 +752,7 @@
                                 placeholder="123 456 789"
                                 autocomplete="off"
                             />
-                            <div class="hint">9 chiffres - identifiant unique de l'entreprise recherchee</div>
+                            <div class="hint">9 chiffres - identifiant unique de l'entreprise recherchée</div>
                         </div>
 
                         <div class="form__reassurance">
@@ -782,7 +782,7 @@
                             <div class="stats">
                                 <div class="stat">Bilans : <span id="stat-bilans" class="stat__value">0</span></div>
                                 <div class="stat">Actes : <span id="stat-actes" class="stat__value">0</span></div>
-                                <div class="stat">Etat : <span id="stat-status" class="stat__value">Initialisation</span></div>
+                                <div class="stat">État : <span id="stat-status" class="stat__value">Initialisation</span></div>
                             </div>
                         </div>
 
@@ -793,7 +793,7 @@
                         <div id="log" class="log"></div>
 
                         <button id="download-btn" class="btn" type="button" style="display:none; margin-top:14px;">
-                            Télécharger le dossier
+                            Télécharger les documents
                         </button>
                         <button id="new-search-btn" class="btn" type="button" style="display:none; margin-top:10px;">
                             Lancer une nouvelle recherche
@@ -806,7 +806,7 @@
                 <div class="card__body">
                     <h2 class="section-card__title">Comment fonctionne le collecteur ?</h2>
                     <p class="section-card__intro">
-                        Le collecteur interroge les sources officielles du RNE a partir d'un numero SIREN, recupere les informations et documents disponibles, puis transforme ces depots bruts en un dossier documentaire structure, homogene et immediatement exploitable.
+                        Le collecteur interroge les sources officielles du RNE à partir d'un numéro SIREN, récupère les informations et documents disponibles, puis transforme ces dépôts bruts en un dossier documentaire structuré, homogène et immédiatement exploitable.
                     </p>
 
                     <div class="steps">
@@ -814,7 +814,7 @@
                             <div class="step__index">1</div>
                             <h3 class="step__title">Collecte des données et documents</h3>
                             <p class="step__text">
-                                Le collecteur identifie l'entreprise et recupere les comptes annuels et actes juridiques disponibles depuis les sources officielles.
+                                Le collecteur identifie l'entreprise et récupère les comptes annuels et actes juridiques disponibles depuis les sources officielles.
                             </p>
                         </article>
 
@@ -828,9 +828,9 @@
 
                         <article class="step">
                             <div class="step__index">3</div>
-                            <h3 class="step__title">Restitution prete a l'emploi</h3>
+                            <h3 class="step__title">Restitution prête à l'emploi</h3>
                             <p class="step__text">
-                                L'ensemble est livre dans un fichier ZIP hierarchise avec rapport synthetique, pret a etre copie dans votre GED, CRM ou dossier permanent client.
+                                L'ensemble est livré dans un fichier ZIP hiérarchisé avec rapport synthétique, prêt à être copié dans votre GED, CRM ou dossier permanent client.
                             </p>
                         </article>
                     </div>
@@ -855,7 +855,7 @@
                         <article class="value-item">
                             <h3 class="value-item__title">Détection des documents composites</h3>
                             <p class="value-item__text">
-                                Le collecteur repere automatiquement les documents comportant plusieurs actes afin d'ameliorer la lisibilite et le controle des pieces.
+                                Le collecteur repère automatiquement les documents comportant plusieurs actes afin d'améliorer la lisibilité et le contrôle des pièces.
                             </p>
                         </article>
 
@@ -869,7 +869,7 @@
                         <article class="value-item">
                             <h3 class="value-item__title">Rapport synthétique exploitable</h3>
                             <p class="value-item__text">
-                                Un rapport de synthese accompagne les documents disponibles pour faciliter la consultation, la revue et l'exploitation metier.
+                                Un rapport de synthèse accompagne les documents disponibles pour faciliter la consultation, la revue et l'exploitation métier.
                             </p>
                         </article>
                     </div>
@@ -879,7 +879,7 @@
             <section class="cta">
                 <h2 class="cta__title">Intégrer cette collecte dans votre Cabinet ?</h2>
                 <p class="cta__text">
-                    Nous etudions l'integration de ce collecteur a vos processus metier, a vos logiciels de production et a vos outils de gestion interne afin d'en faire un levier concret d'efficacite operationnelle.
+                    Nous étudions l'intégration de ce collecteur à vos processus métier, à vos logiciels de production et à vos outils de gestion interne afin d'en faire un levier concret d'efficacité opérationnelle.
                 </p>
                 <a href="mailto:contact@gidoo.fr" class="btn btn--ghost">Contactez-nous</a>
             </section>
@@ -1027,7 +1027,7 @@
                 const statusMap = {
                     pending: "Initialisation",
                     running: "En cours",
-                    completed: "Termine",
+                    completed: "Terminé",
                     error: "Erreur",
                 };
                 statStatus.textContent = statusMap[data.status] || data.status;
@@ -1043,7 +1043,7 @@
             if (data.status === "completed") {
                 progressBar.classList.add("done");
                 progressPercent.classList.add("done");
-                statStatus.textContent = "Termine";
+                statStatus.textContent = "Terminé";
                 downloadBtn.style.display = "inline-flex";
                 processingWarning.classList.remove("active");
                 isProcessing = false;
@@ -1052,8 +1052,12 @@
                     if (currentTaskId) {
                         zipDownloaded = true;
                         downloadBtn.style.display = "none";
-                        newSearchBtn.style.display = "inline-flex";
-                        window.location.href = `/api/download/${currentTaskId}`;
+                        const downloadTaskId = currentTaskId;
+                        resetProgress();
+                        sirenInput.value = "";
+                        currentTaskId = null;
+                        progressSection.classList.remove("active");
+                        window.location.href = `/api/download/${downloadTaskId}`;
                     }
                 };
 
@@ -1086,7 +1090,7 @@
             try {
                 const response = await fetch(`/api/status/${taskId}`);
                 if (!response.ok) {
-                    throw new Error("Impossible de recuperer le statut.");
+                    throw new Error("Impossible de récupérer le statut.");
                 }
 
                 const data = await response.json();
@@ -1153,7 +1157,7 @@
                 }
 
                 currentTaskId = data.job_id;
-                showToast("Collecte lancee avec succes.", "success");
+                showToast("Collecte lancée avec succès.", "success");
 
                 pollStatus(currentTaskId);
                 pollTimer = setInterval(() => pollStatus(currentTaskId), 1500);
@@ -1175,4 +1179,3 @@
     </script>
 </body>
 </html>
-
